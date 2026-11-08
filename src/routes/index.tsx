@@ -3,6 +3,7 @@ import { AppShell } from '@/components/layout/AppShell';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { TenantLoginPage, PlatformLoginPage } from '@/features/auth';
+import { TenantsPage, GlobalAdminsPage } from '@/features/platform';
 import { RoleGuard } from './RoleGuard';
 
 interface RoutePlaceholderProps {
@@ -79,34 +80,11 @@ export const router = createBrowserRouter([
         children: [
           {
             path: '/platform/tenants',
-            element: (
-              <RoutePlaceholder
-                title="Kurum (Tenant) Yönetimi"
-                phase="Faz 1"
-                owner="Agent-1 (src/features/platform)"
-                endpoints={[
-                  'GET /api/v1/platform/admin/tenants',
-                  'GET /api/v1/platform/admin/tenants/{id}',
-                  'POST /api/v1/platform/admin/tenants',
-                  'PATCH /api/v1/platform/admin/tenants/{id}/subscription',
-                ]}
-              />
-            ),
+            element: <TenantsPage />,
           },
           {
             path: '/platform/admins',
-            element: (
-              <RoutePlaceholder
-                title="Platform Yöneticileri"
-                phase="Faz 1"
-                owner="Agent-1 (src/features/platform)"
-                endpoints={[
-                  'GET /api/v1/platform/admin/global-users',
-                  'POST /api/v1/platform/admin/global-users',
-                  'POST /api/v1/platform/admin/global-users/{id}/reset-password',
-                ]}
-              />
-            ),
+            element: <GlobalAdminsPage />,
           },
         ],
       },

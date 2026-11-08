@@ -115,7 +115,7 @@ export interface AuthenticatedProfile {
 export interface TenantSummary {
   id: string;
   name: string;
-  domain: string;
+  domain: string | null;
   subscriptionStatus: TenantSubscriptionStatus;
   createdAt: string;
 }
@@ -134,10 +134,10 @@ export interface TenantListResponse {
 export interface CreateTenantRequest {
   id: string;
   name: string;
-  domain: string;
+  domain?: string;
   adminUsername: string;
-  adminEmail: string;
-  adminFullName: string;
+  adminEmail?: string;
+  adminFullName?: string;
   adminPassword?: string;
 }
 
@@ -173,7 +173,7 @@ export interface GlobalUserListResponse {
 export interface CreateGlobalUserRequest {
   username: string;
   email: string;
-  password?: string;
+  password: string;
 }
 
 export interface AdminUserSummary {
@@ -200,7 +200,7 @@ export interface PatchUserRequest {
 }
 
 export interface ResetPasswordRequest {
-  newPassword?: string;
+  newPassword: string;
 }
 
 // ---------------------------------------------------------------------------
