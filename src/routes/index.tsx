@@ -2,6 +2,7 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { AppShell } from '@/components/layout/AppShell';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { TenantLoginPage, PlatformLoginPage } from '@/features/auth';
 import { RoleGuard } from './RoleGuard';
 
 interface RoutePlaceholderProps {
@@ -50,25 +51,11 @@ export const router = createBrowserRouter([
   // Public Routes
   {
     path: '/login',
-    element: (
-      <RoutePlaceholder
-        title="Kurum (Tenant) Kullanıcı Girişi"
-        phase="Faz 1"
-        owner="Agent-1 (src/features/auth)"
-        endpoints={['POST /api/v1/auth/login', 'POST /api/v1/auth/refresh']}
-      />
-    ),
+    element: <TenantLoginPage />,
   },
   {
     path: '/platform/login',
-    element: (
-      <RoutePlaceholder
-        title="Platform SUPER_ADMIN Girişi"
-        phase="Faz 1"
-        owner="Agent-1 (src/features/auth)"
-        endpoints={['POST /api/v1/platform/auth/login']}
-      />
-    ),
+    element: <PlatformLoginPage />,
   },
   {
     path: '/share/:token',

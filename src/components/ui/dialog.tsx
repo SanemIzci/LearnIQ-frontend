@@ -32,9 +32,17 @@ export function Dialog({
     if (!dialog) return;
 
     if (open && !dialog.open) {
-      dialog.showModal();
+      if (typeof dialog.showModal === 'function') {
+        dialog.showModal();
+      } else {
+        dialog.setAttribute('open', '');
+      }
     } else if (!open && dialog.open) {
-      dialog.close();
+      if (typeof dialog.close === 'function') {
+        dialog.close();
+      } else {
+        dialog.removeAttribute('open');
+      }
     }
   }, [open]);
 
@@ -101,7 +109,13 @@ export function Dialog({
         </div>
         <button
           type="button"
-          onClick={() => dialogRef.current?.close()}
+          onClick={() => {
+            if (typeof dialogRef.current?.close === 'function') {
+              dialogRef.current.close();
+            } else {
+              onOpenChange(false);
+            }
+          }}
           aria-label="Pencereyi kapat"
           className="rounded-sm opacity-70 transition-opacity hover:opacity-100"
         >

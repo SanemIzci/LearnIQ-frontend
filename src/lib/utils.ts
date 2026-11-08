@@ -10,7 +10,7 @@ export function cn(...inputs: ClassValue[]): string {
  * Matches backend TenantSchemaValidator.java:15 regex exactly:
  * ^[a-z][a-z0-9_]{0,62}$ (starts with lowercase letter, max 63 chars)
  */
-const TENANT_SCHEMA_REGEX = /^[a-z][a-z0-9_]{0,62}$/;
+export const TENANT_SCHEMA_REGEX = /^[a-z][a-z0-9_]{0,62}$/;
 
 export function isValidTenantId(tenantId: string | null | undefined): tenantId is string {
   if (!tenantId) return false;

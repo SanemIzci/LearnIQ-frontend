@@ -173,6 +173,7 @@ export const authSlice = createSlice({
         state.user = null;
         state.isAuthenticated = false;
         state.sessionExpiresAt = null;
+        state.isInitialized = true;
       }
     },
 

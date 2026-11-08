@@ -221,8 +221,8 @@ export async function bootstrapAuthSession(): Promise<RefreshOutcome | { status:
   const outcome = await refreshAccessTokenSingleFlight();
   if (outcome.status === 'invalid_session') {
     store.dispatch(clearAuth());
-  } else if (outcome.status === 'network_error') {
-    // Preserve sessionStorage bootstrap on temporary network outage
+  } else if (outcome.status === 'network_error' || outcome.status === 'aborted') {
+    // Preserve sessionStorage bootstrap on temporary network outage or cancellation
     store.dispatch(markAuthInitialized());
   }
   return outcome;

@@ -25,6 +25,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { UserRole } from '@/types/api';
 import { SuperAdminExpiryBanner } from './SuperAdminExpiryBanner';
+import { TenantSwitchModal } from '@/features/auth';
 
 interface NavItem {
   label: string;
@@ -117,6 +118,7 @@ export function AppShell() {
   const location = useLocation();
   const { user, tenantId } = useAppSelector((state) => state.auth);
   const { mobileNavOpen, toasts } = useAppSelector((state) => state.ui);
+  const [tenantSwitchOpen, setTenantSwitchOpen] = React.useState(false);
   const mainRef = React.useRef<HTMLElement | null>(null);
   const menuButtonRef = React.useRef<HTMLButtonElement | null>(null);
 
@@ -226,7 +228,18 @@ export function AppShell() {
           </Button>
           <span className="text-base font-bold tracking-tight text-primary">LearnIQ</span>
           {tenantId ? (
-            <Badge variant="secondary">Kurum: {tenantId}</Badge>
+            <div className="flex items-center gap-1.5">
+              <Badge variant="secondary">Kurum: {tenantId}</Badge>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 px-1.5 text-xs text-muted-foreground hover:text-foreground"
+                onClick={() => setTenantSwitchOpen(true)}
+                title="Farklı bir kuruma geçiş yap"
+              >
+                Değiştir
+              </Button>
+            </div>
           ) : user?.role === 'SUPER_ADMIN' ? (
             <Badge variant="default">Platform Yönetimi</Badge>
           ) : null}
@@ -325,6 +338,11 @@ export function AppShell() {
           </div>
         ))}
       </div>
+      <TenantSwitchModal
+        open={tenantSwitchOpen}
+        onOpenChange={setTenantSwitchOpen}
+        currentTenantId={tenantId}
+      />
     </div>
   );
 }
