@@ -49,3 +49,18 @@ export function decodeJwtExpiryMs(token: string | null | undefined): number | nu
     return null;
   }
 }
+
+/**
+ * Safely formats a 'YYYY-MM-DD' ISO date string to Turkish locale format (DD.MM.YYYY)
+ * without timezone-offset drift caused by parsing via UTC new Date().
+ */
+export function formatLocalDate(dateStr: string | null | undefined): string {
+  if (!dateStr) return '—';
+  const parts = dateStr.split('-');
+  if (parts.length === 3) {
+    const [y, m, d] = parts;
+    return `${d.padStart(2, '0')}.${m.padStart(2, '0')}.${y}`;
+  }
+  return dateStr;
+}
+

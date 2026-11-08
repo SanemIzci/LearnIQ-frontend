@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { TenantLoginPage, PlatformLoginPage } from '@/features/auth';
 import { TenantsPage, GlobalAdminsPage } from '@/features/platform';
+import { ExamsPage } from '@/features/exams';
 import { RoleGuard } from './RoleGuard';
 
 interface RoutePlaceholderProps {
@@ -153,15 +154,20 @@ export const router = createBrowserRouter([
           },
           {
             path: '/staff/exams',
+            element: <ExamsPage />,
+          },
+          {
+            path: '/staff/exams/:examId',
             element: (
               <RoutePlaceholder
-                title="Sınav Yaşam Döngüsü ve Sonuç Onay Merkezi"
-                phase="Faz 2"
+                title="Sınav Detay ve Sonuç İnceleme Merkezi"
+                phase="Faz 2 — Part B"
                 owner="Agent-2 (src/features/exams)"
                 endpoints={[
-                  'GET /api/v1/exams',
-                  'POST /api/v1/exams',
+                  'GET /api/v1/exams/{examId}',
                   'GET /api/v1/exams/{examId}/results',
+                  'POST /api/v1/exams/{examId}/results/{resultId}/approve',
+                  'POST /api/v1/exams/{examId}/results/{resultId}/reject',
                   'POST /api/v1/exams/{examId}/finalize',
                 ]}
               />
