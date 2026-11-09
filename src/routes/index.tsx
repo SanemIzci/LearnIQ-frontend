@@ -1,10 +1,10 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { AppShell } from '@/components/layout/AppShell';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { TenantLoginPage, PlatformLoginPage } from '@/features/auth';
 import { TenantsPage, GlobalAdminsPage } from '@/features/platform';
 import { ExamsPage, ExamDetailPage } from '@/features/exams';
+import { ExamRulesPage } from '@/features/exam-rules';
+import { UsersPage, SubjectsPage } from '@/features/administration';
 import {
   OverviewPage,
   ClassroomsPage,
@@ -20,44 +20,6 @@ import {
   StudentProfilePage,
 } from '@/features/student-portal';
 import { RoleGuard } from './RoleGuard';
-
-interface RoutePlaceholderProps {
-  title: string;
-  phase: string;
-  owner: string;
-  endpoints: string[];
-}
-
-/**
- * Phase 0 structural route shell.
- * Feature-specific business screens will be mounted in Phases 1–4.
- */
-function RoutePlaceholder({ title, phase, owner, endpoints }: RoutePlaceholderProps) {
-  return (
-    <div className="mx-auto max-w-3xl py-6">
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between gap-2">
-            <CardTitle as="h1">{title}</CardTitle>
-            <Badge variant="secondary">{phase}</Badge>
-          </div>
-          <CardDescription>Sorumlu Modül Ajanı: {owner}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground mb-3">
-            Faz 0 (Temel Altyapı &amp; Kontrat Katmanı) rota iskeleti hazır. Bu ekran ilgili faz
-            onaylandıktan sonra aşağıdaki doğrulanmış backend uç noktalarına bağlanacaktır:
-          </p>
-          <ul className="list-disc pl-5 text-xs font-mono space-y-1 text-foreground">
-            {endpoints.map((ep) => (
-              <li key={ep}>{ep}</li>
-            ))}
-          </ul>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
 
 export const router = createBrowserRouter([
   {
@@ -115,32 +77,11 @@ export const router = createBrowserRouter([
           },
           {
             path: '/staff/subjects',
-            element: (
-              <RoutePlaceholder
-                title="Ders ve Konu Yönetimi"
-                phase="Faz 1"
-                owner="Agent-1 (src/features/administration)"
-                endpoints={[
-                  'GET /api/v1/subjects',
-                  'POST /api/v1/subjects',
-                  'GET /api/v1/subjects/{id}/topics',
-                ]}
-              />
-            ),
+            element: <SubjectsPage />,
           },
           {
             path: '/staff/exam-rules',
-            element: (
-              <RoutePlaceholder
-                title="Sınav Tipi Net Hesaplama Kuralları"
-                phase="Faz 1 (Paylaşılan Modül)"
-                owner="Agent-1 & Agent-2 (src/features/exam-rules)"
-                endpoints={[
-                  'GET /api/v1/exam-rules/{examType}',
-                  'PUT /api/v1/exam-rules/{examType}/{subjectId}',
-                ]}
-              />
-            ),
+            element: <ExamRulesPage />,
           },
           {
             path: '/staff/exams',
@@ -163,14 +104,7 @@ export const router = createBrowserRouter([
         children: [
           {
             path: '/staff/users',
-            element: (
-              <RoutePlaceholder
-                title="Kurum Kullanıcı Yönetimi"
-                phase="Faz 1"
-                owner="Agent-1 (src/features/administration)"
-                endpoints={['GET /api/v1/users', 'POST /api/v1/auth/register']}
-              />
-            ),
+            element: <UsersPage />,
           },
           {
             path: '/staff/ai-assistant',

@@ -22,6 +22,12 @@ import {
   useAnalyticsSubjectsQuery,
 } from '../api/analyticsApi';
 import { ObservationDialog } from '../components/ObservationDialog';
+import {
+  ClassroomCreateDialog,
+  ClassroomRosterDialog,
+  useCreateClassroomMutation,
+  type CreateClassroomFormValues,
+} from '@/features/administration';
 import type { ObservationFormValues } from '../schemas/observationSchemas';
 import type { ClassroomResponse } from '@/types/api';
 
@@ -29,16 +35,33 @@ export function ClassroomsPage() {
   const dispatch = useAppDispatch();
   const queryClient = useQueryClient();
   const tenantId = useAppSelector((state) => state.auth.tenantId);
+  const role = useAppSelector((state) => state.auth.user?.role);
+  const isAdmin = role === 'ADMIN' || role === 'SUPER_ADMIN';
 
   const {
     data: classrooms = [],
     isLoading,
     isError,
     refetch,
+    isFetching,
   } = useAnalyticsClassroomsQuery();
   const { data: subjects = [] } = useAnalyticsSubjectsQuery();
 
   const [selectedClassroomForObs, setSelectedClassroomForObs] = React.useState<ClassroomResponse | null>(null);
+  const [isCreateClassroomOpen, setIsCreateClassroomOpen] = React.useState(false);
+  const [rosterClassroom, setRosterClassroom] = React.useState<ClassroomResponse | null>(null);
+
+  const createClassroomMutation = useCreateClassroomMutation();
+
+  const handleCreateClassroomSubmit = async (values: CreateClassroomFormValues) => {
+    await createClassroomMutation.mutateAsync(values);
+    dispatch(
+      pushToast({
+        title: 'Sınıf Oluşturuldu',
+        description: `"${values.name}" sınıfı başarıyla kaydedildi.`,
+      })
+    );
+  };
 
   const handleSaveObservation = async (payload: ObservationFormValues) => {
     if (!selectedClassroomForObs) return;
@@ -81,16 +104,31 @@ export function ClassroomsPage() {
           </p>
         </div>
 
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={() => void refetch()}
-          className="gap-1.5 self-start sm:self-auto"
-        >
-          <RefreshCw className="h-4 w-4" aria-hidden="true" />
-          Yenile
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => void refetch()}
+            disabled={isFetching}
+            className="gap-1.5 self-start sm:self-auto"
+          >
+            <RefreshCw className={`h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} aria-hidden="true" />
+            Yenile
+          </Button>
+
+          {isAdmin ? (
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => setIsCreateClassroomOpen(true)}
+              className="gap-1.5"
+            >
+              <Plus className="h-4 w-4" aria-hidden="true" />
+              <span>Yeni Sınıf Tanımla</span>
+            </Button>
+          ) : null}
+        </div>
       </div>
 
       {/* Classroom List Cards */}
@@ -141,7 +179,20 @@ export function ClassroomsPage() {
                   <span className="font-mono text-primary font-semibold">Hazır</span>
                 </div>
 
-                <div className="flex items-center justify-end gap-2 pt-1">
+                <div className="flex flex-wrap items-center justify-end gap-1.5 pt-1">
+                  {isAdmin ? (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setRosterClassroom(cls)}
+                      className="h-8 text-xs text-muted-foreground hover:text-foreground gap-1"
+                    >
+                      <Users className="h-3.5 w-3.5" aria-hidden="true" />
+                      <span>Kadro &amp; Öğrenci</span>
+                    </Button>
+                  ) : null}
+
                   <Button
                     type="button"
                     variant="outline"
@@ -179,6 +230,22 @@ export function ClassroomsPage() {
           onSave={handleSaveObservation}
         />
       ) : null}
+
+      {/* Classroom Creation Modal */}
+      <ClassroomCreateDialog
+        open={isCreateClassroomOpen}
+        onOpenChange={setIsCreateClassroomOpen}
+        onSubmit={handleCreateClassroomSubmit}
+      />
+
+      {/* Classroom Roster Management Modal */}
+      <ClassroomRosterDialog
+        open={Boolean(rosterClassroom)}
+        onOpenChange={(open) => {
+          if (!open) setRosterClassroom(null);
+        }}
+        classroom={rosterClassroom}
+      />
     </div>
   );
 }

@@ -7,12 +7,10 @@ import { Button } from '@/components/ui/button';
 import { Input, Label } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { Alert } from '@/components/ui/alert';
-import { useAppDispatch, useAppSelector } from '@/store';
-import { useQueryClient } from '@tanstack/react-query';
-import { tenantQueryKey } from '@/lib/api/queryClient';
+import { useAppDispatch } from '@/store';
 import { pushToast } from '@/store/uiSlice';
 import { ApiError } from '@/lib/api/error-parser';
-import { examRulesApi } from '../api/examRulesApi';
+import { useUpsertExamRuleMutation } from '../api/examRulesApi';
 import { examRuleSchema, type ExamRuleFormValues } from '../schemas/examRuleSchema';
 
 export interface ExamRuleEnsureDialogProps {
@@ -33,8 +31,7 @@ export function ExamRuleEnsureDialog({
   onRuleEnsured,
 }: ExamRuleEnsureDialogProps) {
   const dispatch = useAppDispatch();
-  const queryClient = useQueryClient();
-  const tenantId = useAppSelector((state) => state.auth.tenantId);
+  const upsertRuleMutation = useUpsertExamRuleMutation();
   const [serverError, setServerError] = React.useState<string | null>(null);
 
   const defaultDivisor = examType?.toUpperCase().includes('LGS') ? 3.0 : 4.0;
@@ -65,13 +62,13 @@ export function ExamRuleEnsureDialog({
   const onSubmit = async (data: ExamRuleFormValues) => {
     setServerError(null);
     try {
-      await examRulesApi.upsertRule(examType, subjectId, {
-        questionCount: Number(data.questionCount),
-        penaltyDivisor: Number(data.penaltyDivisor),
-      });
-
-      await queryClient.invalidateQueries({
-        queryKey: tenantQueryKey(tenantId, 'exam-rules', examType),
+      await upsertRuleMutation.mutateAsync({
+        examType,
+        subjectId,
+        data: {
+          questionCount: Number(data.questionCount),
+          penaltyDivisor: Number(data.penaltyDivisor),
+        },
       });
 
       dispatch(
@@ -131,7 +128,7 @@ export function ExamRuleEnsureDialog({
               {...register('questionCount', { valueAsNumber: true })}
             />
             {errors.questionCount ? (
-              <p id="rule-qcount-err" className="text-xs text-destructive">
+              <p id="rule-qcount-err" role="alert" className="text-xs text-destructive">
                 {errors.questionCount.message}
               </p>
             ) : null}
@@ -142,6 +139,8 @@ export function ExamRuleEnsureDialog({
             <div className="relative">
               <Select
                 id="rule-penalty-divisor"
+                aria-invalid={Boolean(errors.penaltyDivisor)}
+                aria-describedby={errors.penaltyDivisor ? 'rule-penalty-divisor-err' : undefined}
                 {...register('penaltyDivisor', { valueAsNumber: true })}
               >
                 <option value={4.0}>4.0 (TYT / AYT / YKS standardı: 4 yanlış 1 doğru)</option>
@@ -150,7 +149,9 @@ export function ExamRuleEnsureDialog({
               </Select>
             </div>
             {errors.penaltyDivisor ? (
-              <p className="text-xs text-destructive">{errors.penaltyDivisor.message}</p>
+              <p id="rule-penalty-divisor-err" role="alert" className="text-xs text-destructive">
+                {errors.penaltyDivisor.message}
+              </p>
             ) : null}
           </div>
         </div>
