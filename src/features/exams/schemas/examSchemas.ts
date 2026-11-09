@@ -39,3 +39,13 @@ export const updateExamSchema = z.object({
 
 export type UpdateExamFormValues = z.infer<typeof updateExamSchema>;
 
+export const rejectResultSchema = z.object({
+  reason: z
+    .string()
+    .trim()
+    .min(3, 'Reddetme sebebi en az 3 karakter olmalıdır')
+    .max(500, 'Reddetme sebebi en fazla 500 karakter olabilir'),
+});
+
+export type RejectResultFormValues = z.infer<typeof rejectResultSchema>;
+

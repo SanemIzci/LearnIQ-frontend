@@ -10,6 +10,9 @@ import type {
   ExamResponse,
   ExamUpdateRequest,
   PageResponse,
+  RejectionRequest,
+  ResultStatus,
+  StudentExamResult,
   SubjectResponse,
 } from '@/types/api';
 
@@ -85,6 +88,45 @@ export const examsApi = {
     const normalized = normalizePaginatedResponse<ClassroomResponse>(raw);
     return normalized.content;
   },
+
+  fetchExamResults: async (
+    examId: string,
+    params: { status?: ResultStatus; page?: number; size?: number } = {}
+  ): Promise<PageResponse<StudentExamResult>> => {
+    const { status = 'SUBMITTED', page = 0, size = 15 } = params;
+    const query = new URLSearchParams();
+    query.set('status', status);
+    query.set('page', String(page));
+    query.set('size', String(size));
+
+    const raw = await apiClient.get<DualModeListResponse<StudentExamResult>>(
+      `/api/v1/exams/${encodeURIComponent(examId)}/results?${query.toString()}`
+    );
+    return normalizePaginatedResponse<StudentExamResult>(raw, page, size);
+  },
+
+  approveResult: async (examId: string, resultId: string): Promise<void> => {
+    await apiClient.post<void>(
+      `/api/v1/exams/${encodeURIComponent(examId)}/results/${encodeURIComponent(resultId)}/approve`
+    );
+  },
+
+  rejectResult: async (
+    examId: string,
+    resultId: string,
+    data: RejectionRequest
+  ): Promise<void> => {
+    await apiClient.post<void>(
+      `/api/v1/exams/${encodeURIComponent(examId)}/results/${encodeURIComponent(resultId)}/reject`,
+      data
+    );
+  },
+
+  finalizeExam: async (examId: string): Promise<void> => {
+    await apiClient.post<void>(
+      `/api/v1/exams/${encodeURIComponent(examId)}/finalize`
+    );
+  },
 };
 
 export function useExamsQuery(params: ExamsQueryParams = {}) {
@@ -128,6 +170,29 @@ export function useClassroomsQuery() {
     queryKey: tenantQueryKey(tenantId, 'classrooms'),
     queryFn: () => examsApi.fetchClassrooms(),
     enabled: Boolean(tenantId),
+  });
+}
+
+export interface ExamResultsQueryParams {
+  status?: ResultStatus;
+  page?: number;
+  size?: number;
+}
+
+export function useExamResultsQuery(
+  examId: string | null | undefined,
+  params: ExamResultsQueryParams = {}
+) {
+  const tenantId = useAppSelector((state) => state.auth.tenantId);
+  const { status = 'SUBMITTED', page = 0, size = 15 } = params;
+
+  return useQuery({
+    queryKey: tenantQueryKey(tenantId, 'exam-results', examId, status, page, size),
+    queryFn: () => {
+      if (!examId) return Promise.reject(new Error('Exam ID is required'));
+      return examsApi.fetchExamResults(examId, { status, page, size });
+    },
+    enabled: Boolean(tenantId && examId),
   });
 }
 
