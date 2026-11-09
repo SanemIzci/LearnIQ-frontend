@@ -493,17 +493,24 @@ export interface ExamSummaryDto {
 export interface ClassSubjectAverageDto {
   subjectId: string;
   subjectName: string;
-  averageNet: number;
-  averageCorrect: number;
-  averageWrong: number;
+  avgNet: number;
+  avgCorrect: number;
+  avgWrong: number;
+  // Aliases for convenience in charts
+  averageNet?: number;
+  averageCorrect?: number;
+  averageWrong?: number;
 }
 
 export interface ClassExamTrendDto {
   examId: string;
   examTitle: string;
   examDate: string;
-  averageScore: number;
-  participantCount: number;
+  avgScore: number;
+  studentCount: number;
+  // Aliases for convenience
+  averageScore?: number;
+  participantCount?: number;
 }
 
 export interface ClassroomAnalyticsResponse {
@@ -521,13 +528,15 @@ export interface ClassroomAnalyticsResponse {
 export interface ClassroomComparisonItemDto {
   classroomId: string;
   classroomName: string;
-  studentCount: number;
-  participantCount: number;
-  participationRate: number;
-  averageScore: number;
-  minScore: number;
-  maxScore: number;
-  subjectAverages: Record<string, number>;
+  totalStudents: number;
+  participationCount: number;
+  avgScore: number;
+  subjectNets: ClassSubjectAverageDto[];
+  // Convenience fields for comparison tables
+  studentCount?: number;
+  participantCount?: number;
+  participationRate?: number;
+  averageScore?: number;
 }
 
 export interface ClassroomComparisonResponse {
@@ -535,6 +544,26 @@ export interface ClassroomComparisonResponse {
   examTitle: string;
   examDate: string;
   classrooms: ClassroomComparisonItemDto[];
+}
+
+export interface ClassSubjectTrendRow {
+  classroomName: string;
+  subjectName: string;
+  examTitle: string;
+  examDate: string;
+  avgNet: number;
+  deltaFromPrevious: number | null;
+  trendDirection: string;
+}
+
+export interface RecentObservationDto {
+  observationId: string;
+  classroomName: string;
+  subjectName: string | null;
+  teacherRef: string;
+  tags: string | null;
+  content: string;
+  observedAt: string;
 }
 
 export interface SubjectScorecardRow {

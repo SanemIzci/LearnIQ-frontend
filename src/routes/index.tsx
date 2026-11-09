@@ -6,6 +6,13 @@ import { TenantLoginPage, PlatformLoginPage } from '@/features/auth';
 import { TenantsPage, GlobalAdminsPage } from '@/features/platform';
 import { ExamsPage, ExamDetailPage } from '@/features/exams';
 import {
+  OverviewPage,
+  ClassroomsPage,
+  ClassroomAnalyticsPage,
+  StudentAnalyticsPage,
+} from '@/features/analytics';
+import { AdminAiAssistantPage } from '@/features/ai-rag';
+import {
   PublicSharePage,
   StudentExamDashboardPage,
   StudentExamsPage,
@@ -96,32 +103,15 @@ export const router = createBrowserRouter([
         children: [
           {
             path: '/staff/overview',
-            element: (
-              <RoutePlaceholder
-                title="Kurum & Öğretmen Analitik Genel Bakış"
-                phase="Faz 4"
-                owner="Agent-4 (src/features/analytics)"
-                endpoints={[
-                  'GET /api/v1/analytics/overview',
-                  'GET /api/v1/teachers/me/comparison',
-                ]}
-              />
-            ),
+            element: <OverviewPage />,
           },
           {
             path: '/staff/classrooms',
-            element: (
-              <RoutePlaceholder
-                title="Sınıf Yönetimi ve Atamalar"
-                phase="Faz 1 & Faz 4"
-                owner="Agent-1 (src/features/administration) & Agent-4 (src/features/analytics)"
-                endpoints={[
-                  'GET /api/v1/classrooms',
-                  'POST /api/v1/classrooms',
-                  'GET /api/v1/teachers/me/classrooms/{id}/analytics',
-                ]}
-              />
-            ),
+            element: <ClassroomsPage />,
+          },
+          {
+            path: '/staff/classrooms/:classroomId/analytics',
+            element: <ClassroomAnalyticsPage />,
           },
           {
             path: '/staff/subjects',
@@ -162,24 +152,14 @@ export const router = createBrowserRouter([
           },
           {
             path: '/staff/students/:studentId',
-            element: (
-              <RoutePlaceholder
-                title="Öğrenci Analitiği ve Öğretmen Gözlem Notları"
-                phase="Faz 4"
-                owner="Agent-4 (src/features/analytics)"
-                endpoints={[
-                  'GET /api/v1/analytics/students/{studentId}/weaknesses',
-                  'GET /api/v1/teachers/me/students/{studentId}/observations',
-                ]}
-              />
-            ),
+            element: <StudentAnalyticsPage />,
           },
         ],
       },
 
-      // Tenant ADMIN-Only Routes
+      // Tenant ADMIN & Platform SUPER_ADMIN Routes
       {
-        element: <RoleGuard allowedRoles={['ADMIN']} />,
+        element: <RoleGuard allowedRoles={['ADMIN', 'SUPER_ADMIN']} />,
         children: [
           {
             path: '/staff/users',
@@ -194,17 +174,7 @@ export const router = createBrowserRouter([
           },
           {
             path: '/staff/ai-assistant',
-            element: (
-              <RoutePlaceholder
-                title="Admin RAG Doküman İndeksleme ve AI Sohbet"
-                phase="Faz 4"
-                owner="Agent-4 (src/features/ai-rag)"
-                endpoints={[
-                  'POST /api/v1/admin/ai/chat',
-                  'POST /api/v1/admin/ai/rag/backfill',
-                ]}
-              />
-            ),
+            element: <AdminAiAssistantPage />,
           },
         ],
       },
