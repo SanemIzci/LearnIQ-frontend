@@ -5,6 +5,13 @@ import { Badge } from '@/components/ui/badge';
 import { TenantLoginPage, PlatformLoginPage } from '@/features/auth';
 import { TenantsPage, GlobalAdminsPage } from '@/features/platform';
 import { ExamsPage, ExamDetailPage } from '@/features/exams';
+import {
+  PublicSharePage,
+  StudentExamDashboardPage,
+  StudentExamsPage,
+  StudentHomePage,
+  StudentProfilePage,
+} from '@/features/student-portal';
 import { RoleGuard } from './RoleGuard';
 
 interface RoutePlaceholderProps {
@@ -61,14 +68,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '/share/:token',
-    element: (
-      <RoutePlaceholder
-        title="Paylaşılan Öğrenci Sınav Sonuç Karnesi"
-        phase="Faz 3"
-        owner="Agent-3 (src/features/student-portal)"
-        endpoints={['GET /api/v1/public/share/{token}']}
-      />
-    ),
+    element: <PublicSharePage />,
   },
 
   // Protected Application Shell
@@ -215,45 +215,19 @@ export const router = createBrowserRouter([
         children: [
           {
             path: '/student/home',
-            element: (
-              <RoutePlaceholder
-                title="Öğrenci Ana Sayfa"
-                phase="Faz 3"
-                owner="Agent-3 (src/features/student-portal)"
-                endpoints={['GET /api/v1/students/me/home']}
-              />
-            ),
+            element: <StudentHomePage />,
           },
           {
             path: '/student/exams',
-            element: (
-              <RoutePlaceholder
-                title="Sınav Keşfi, Doğru/Yanlış Sonuç Girişi ve Karne"
-                phase="Faz 3"
-                owner="Agent-3 (src/features/student-portal)"
-                endpoints={[
-                  'GET /api/v1/students/me/exams',
-                  'POST /api/v1/exams/{examId}/results/me',
-                  'GET /api/v1/students/me/exams/{examId}/dashboard',
-                  'GET /api/v1/students/me/exams/{examId}/ai-report',
-                ]}
-              />
-            ),
+            element: <StudentExamsPage />,
+          },
+          {
+            path: '/student/exams/:examId/dashboard',
+            element: <StudentExamDashboardPage />,
           },
           {
             path: '/student/profile',
-            element: (
-              <RoutePlaceholder
-                title="Öğrenci Profili, Rozetler ve Öğretmen Gözlemleri"
-                phase="Faz 3"
-                owner="Agent-3 (src/features/student-portal)"
-                endpoints={[
-                  'GET /api/v1/students/me/profile',
-                  'GET /api/v1/students/me/badges',
-                  'GET /api/v1/students/me/observations',
-                ]}
-              />
-            ),
+            element: <StudentProfilePage />,
           },
         ],
       },

@@ -351,8 +351,8 @@ export interface StudentHomeLatestExamDto {
 export interface StudentBadgeDto {
   code: string;
   title: string;
-  description: string;
-  examTitle: string;
+  description: string | null;
+  examTitle: string | null;
   awardedAt: string;
 }
 
@@ -365,8 +365,9 @@ export interface StudentHomeResponseDto {
 
 export interface TopStudentDto {
   rank: number;
-  studentId: string;
-  maskedName: string;
+  displayName: string | null;
+  maskedName?: string;
+  studentId?: string;
   netScore: number;
 }
 
@@ -377,6 +378,43 @@ export interface StudentDashboardResponse {
   percentile: number | null;
   classAverage: number | null;
   top3Students: TopStudentDto[];
+}
+
+export interface TrendDataPointDto {
+  examId: string;
+  examName: string;
+  examDate: string;
+  netScore: number;
+  percentile: number | null;
+}
+
+export interface SubjectNetScoreDto {
+  subjectId: string;
+  subjectName: string;
+  correctCount: number;
+  wrongCount: number;
+  netScore: number;
+}
+
+export interface ExamPerformanceDto {
+  examId: string;
+  examTitle: string;
+  examType: string;
+  examDate: string;
+  totalScore: number;
+  classRank: number | null;
+  schoolRank: number | null;
+  subjectScores: SubjectNetScoreDto[];
+}
+
+export interface StudentTrendReportDto {
+  studentId: string;
+  totalExamsTaken: number;
+  examHistory: ExamPerformanceDto[];
+}
+
+export interface ShareLinkResponse {
+  token: string;
 }
 
 /**
