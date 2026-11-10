@@ -41,6 +41,10 @@ export interface ApiRequestOptions extends Omit<RequestInit, 'body'> {
    */
   skipRefreshOn401?: boolean;
   /**
+   * Request timeout in milliseconds (defaults to 45000ms).
+   */
+  timeoutMs?: number;
+  /**
    * Internal flag preventing infinite 401 retry loops.
    */
   _retried?: boolean;
@@ -381,11 +385,34 @@ export async function apiRequest<T = void>(
     }
   }
 
-  const response = await fetch(url, {
-    ...restInit,
-    headers,
-    body: serializedBody,
-  });
+  const timeoutMs = options.timeoutMs ?? 45000;
+  const controller = new AbortController();
+  let timer: ReturnType<typeof setTimeout> | null = null;
+  if (timeoutMs > 0) {
+    timer = setTimeout(() => {
+      controller.abort(new DOMException('İstek zaman aşımına uğradı (Sunucu yanıt vermedi)', 'TimeoutError'));
+    }, timeoutMs);
+  }
+
+  if (options.signal) {
+    if (options.signal.aborted) {
+      controller.abort(options.signal.reason);
+    } else {
+      options.signal.addEventListener('abort', () => controller.abort(options.signal?.reason), { once: true });
+    }
+  }
+
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      ...restInit,
+      signal: controller.signal,
+      headers,
+      body: serializedBody,
+    });
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
 
   if (response.status === 401 && !skipAuth) {
     if (skipRefreshOn401) {
