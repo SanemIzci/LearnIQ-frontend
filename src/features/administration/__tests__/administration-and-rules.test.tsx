@@ -420,6 +420,83 @@ describe('Phase 1 — Part C: Kurum İdaresi & Paylaşılan Sınav Kuralları', 
     await waitFor(() => {
       expect(createSubjectPayload).toEqual({ name: 'Biyoloji' });
     });
+
+    // Ensure Ders ID column header is NOT rendered
+    expect(screen.queryByText('Ders ID')).not.toBeInTheDocument();
+  });
+
+  // ───────────────────────────────────────────────────────────────────────────
+  // 5b. SubjectsPage: Edit and Delete Subject
+  // ───────────────────────────────────────────────────────────────────────────
+  it('updates and deletes a subject via SubjectEditDialog and SubjectDeleteDialog', async () => {
+    let updateUrl = '';
+    let updatePayload: any = null;
+    let deleteUrl = '';
+
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
+      const url = String(input);
+      if (url.includes('/api/v1/subjects/') && init?.method === 'PUT') {
+        updateUrl = url;
+        updatePayload = JSON.parse(String(init.body));
+        return new Response(
+          JSON.stringify({
+            id: 'sub-mat-1',
+            name: updatePayload.name,
+            createdAt: '2026-01-01T00:00:00Z',
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+      if (url.includes('/api/v1/subjects/') && init?.method === 'DELETE') {
+        deleteUrl = url;
+        return new Response(null, { status: 204 });
+      }
+      if (url.includes('/api/v1/subjects')) {
+        return new Response(JSON.stringify(mockSubjects), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      return new Response(null, { status: 404 });
+    });
+
+    renderWithProviders(<SubjectsPage />);
+
+    expect(await screen.findByText('Temel Matematik')).toBeInTheDocument();
+
+    // 1. Edit Subject
+    const editBtn = screen.getByRole('button', { name: /Temel Matematik dersini düzenle/i });
+    fireEvent.click(editBtn);
+
+    const editDialog = screen.getByRole('dialog');
+    expect(within(editDialog).getByText('Dersi Düzenle')).toBeInTheDocument();
+
+    const editNameInput = within(editDialog).getByLabelText(/Ders Adı/i);
+    expect(editNameInput).toHaveValue('Temel Matematik');
+    fireEvent.change(editNameInput, { target: { value: 'İleri Matematik' } });
+
+    const saveEditBtn = within(editDialog).getByRole('button', { name: /Güncelle/i });
+    fireEvent.click(saveEditBtn);
+
+    await waitFor(() => {
+      expect(updateUrl).toContain('/api/v1/subjects/sub-mat-1');
+      expect(updatePayload).toEqual({ name: 'İleri Matematik' });
+    });
+
+    // 2. Delete Subject
+    const deleteBtn = screen.getByRole('button', { name: /Temel Matematik dersini sil/i });
+    fireEvent.click(deleteBtn);
+
+    const deleteDialog = screen.getByRole('dialog');
+    expect(within(deleteDialog).getByRole('heading', { name: 'Dersi Sil' })).toBeInTheDocument();
+    expect(within(deleteDialog).getByText(/dersini silmek istediğinize emin misiniz/i)).toBeInTheDocument();
+
+    const confirmDeleteBtn = within(deleteDialog).getByRole('button', { name: /^Dersi Sil$/i });
+    fireEvent.click(confirmDeleteBtn);
+
+    await waitFor(() => {
+      expect(deleteUrl).toContain('/api/v1/subjects/sub-mat-1');
+    });
   });
 
   // ───────────────────────────────────────────────────────────────────────────

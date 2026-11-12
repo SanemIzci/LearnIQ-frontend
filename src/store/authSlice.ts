@@ -82,16 +82,63 @@ export function writeSessionBootstrap(bootstrap: SessionBootstrap | null): void 
   }
 }
 
+export const PLATFORM_BOOTSTRAP_KEY = 'learniq_platform_session';
+
+export interface PlatformBootstrap {
+  accessToken: string;
+  user: AuthUser;
+  sessionExpiresAt: number | null;
+}
+
+export function readPlatformBootstrap(): PlatformBootstrap | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = window.sessionStorage.getItem(PLATFORM_BOOTSTRAP_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<PlatformBootstrap>;
+    if (
+      typeof parsed.accessToken === 'string' &&
+      parsed.accessToken.length > 0 &&
+      parsed.user?.role === 'SUPER_ADMIN' &&
+      typeof parsed.sessionExpiresAt === 'number' &&
+      parsed.sessionExpiresAt > Date.now()
+    ) {
+      return {
+        accessToken: parsed.accessToken,
+        user: parsed.user,
+        sessionExpiresAt: parsed.sessionExpiresAt,
+      };
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+export function writePlatformBootstrap(bootstrap: PlatformBootstrap | null): void {
+  if (typeof window === 'undefined') return;
+  try {
+    if (!bootstrap) {
+      window.sessionStorage.removeItem(PLATFORM_BOOTSTRAP_KEY);
+    } else {
+      window.sessionStorage.setItem(PLATFORM_BOOTSTRAP_KEY, JSON.stringify(bootstrap));
+    }
+  } catch {
+    // Ignore storage quota / privacy mode errors
+  }
+}
+
+const initialPlatformBootstrap = readPlatformBootstrap();
 const initialBootstrap = readSessionBootstrap();
 
 const initialState: AuthState = {
-  accessToken: null,
+  accessToken: initialPlatformBootstrap?.accessToken ?? null,
   refreshToken: initialBootstrap?.refreshToken ?? null,
-  user: null,
+  user: initialPlatformBootstrap?.user ?? null,
   tenantId: initialBootstrap?.tenantId ?? null,
-  isAuthenticated: false,
-  sessionExpiresAt: null,
-  isInitialized: initialBootstrap === null,
+  isAuthenticated: initialPlatformBootstrap !== null,
+  sessionExpiresAt: initialPlatformBootstrap?.sessionExpiresAt ?? null,
+  isInitialized: initialPlatformBootstrap !== null || initialBootstrap === null,
   sessionEpoch: 1,
 };
 

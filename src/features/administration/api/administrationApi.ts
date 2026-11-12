@@ -74,6 +74,20 @@ export const administrationApi = {
     return apiClient.post<SubjectResponse>('/api/v1/subjects', payload);
   },
 
+  updateSubject: async (
+    subjectId: string,
+    payload: SubjectRequest
+  ): Promise<SubjectResponse> => {
+    return apiClient.put<SubjectResponse>(
+      `/api/v1/subjects/${encodeURIComponent(subjectId)}`,
+      payload
+    );
+  },
+
+  deleteSubject: async (subjectId: string): Promise<void> => {
+    await apiClient.delete<void>(`/api/v1/subjects/${encodeURIComponent(subjectId)}`);
+  },
+
   fetchTopics: async (subjectId: string): Promise<SubjectTopicResponse[]> => {
     return apiClient.get<SubjectTopicResponse[]>(
       `/api/v1/subjects/${encodeURIComponent(subjectId)}/topics`
@@ -224,6 +238,40 @@ export function useCreateSubjectMutation() {
 
   return useMutation({
     mutationFn: (payload: SubjectRequest) => administrationApi.createSubject(payload),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: tenantQueryKey(tenantId, 'subjects'),
+      });
+    },
+  });
+}
+
+export function useUpdateSubjectMutation() {
+  const queryClient = useQueryClient();
+  const tenantId = useAppSelector((state) => state.auth.tenantId);
+
+  return useMutation({
+    mutationFn: ({
+      subjectId,
+      payload,
+    }: {
+      subjectId: string;
+      payload: SubjectRequest;
+    }) => administrationApi.updateSubject(subjectId, payload),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: tenantQueryKey(tenantId, 'subjects'),
+      });
+    },
+  });
+}
+
+export function useDeleteSubjectMutation() {
+  const queryClient = useQueryClient();
+  const tenantId = useAppSelector((state) => state.auth.tenantId);
+
+  return useMutation({
+    mutationFn: (subjectId: string) => administrationApi.deleteSubject(subjectId),
     onSuccess: () => {
       void queryClient.invalidateQueries({
         queryKey: tenantQueryKey(tenantId, 'subjects'),

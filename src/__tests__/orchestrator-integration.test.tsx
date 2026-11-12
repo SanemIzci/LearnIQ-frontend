@@ -15,6 +15,7 @@ import { analyticsApi } from '@/features/analytics/api/analyticsApi';
 import { ExamsPage } from '@/features/exams/pages/ExamsPage';
 import { StudentExamDashboardPage } from '@/features/student-portal/pages/StudentExamDashboardPage';
 import { ClassroomAnalyticsPage } from '@/features/analytics/pages/ClassroomAnalyticsPage';
+import { RoleGuard } from '@/routes/RoleGuard';
 import { ApiError } from '@/lib/api/error-parser';
 import type {
   AiReportResponseDto,
@@ -492,6 +493,39 @@ describe('Faz 5: Orchestrator — Özellikler Arası Entegrasyon & Nihai QA Kap�
     // Cache should be completely cleared by the authSlice listener
     expect(queryClient.getQueryData(['tenant_alpha', 'exams'])).toBeUndefined();
     expect(queryClient.getQueryCache().getAll().length).toBe(0);
+  });
+
+  // ---------------------------------------------------------------------------
+  // Test 7 — RoleGuard SUPER_ADMIN İzolasyonu (/staff rotasından /platform/tenants'a yönlendirme)
+  // ---------------------------------------------------------------------------
+  it('Kapı 7: SUPER_ADMIN personeli olmayan /staff rotalarına erişmeye çalıştığında RoleGuard engeller ve /platform/tenants rotasına yönlendirir', async () => {
+    store.dispatch(
+      setCredentials({
+        auth: {
+          accessToken: 'super-admin-token-xyz',
+          refreshToken: null,
+          role: 'SUPER_ADMIN',
+          userId: 'sa-01',
+          username: 'superadmin',
+        },
+        tenantId: null,
+      })
+    );
+
+    renderWithProviders(
+      <Routes>
+        <Route element={<RoleGuard allowedRoles={['ADMIN', 'TEACHER']} />}>
+          <Route path="/staff/overview" element={<div>Staff Overview Gizli Alan</div>} />
+        </Route>
+        <Route path="/platform/tenants" element={<div>Platform Tenants Alanı</div>} />
+      </Routes>,
+      '/staff/overview'
+    );
+
+    // Should NOT render staff overview
+    expect(screen.queryByText('Staff Overview Gizli Alan')).not.toBeInTheDocument();
+    // RoleGuard should redirect to defaultHomeForRole('SUPER_ADMIN') -> /platform/tenants
+    expect(await screen.findByText('Platform Tenants Alanı')).toBeInTheDocument();
   });
 });
 

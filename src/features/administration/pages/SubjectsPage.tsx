@@ -6,8 +6,10 @@ import {
   Calculator,
   ListOrdered,
   Loader2,
+  Pencil,
   RefreshCw,
   Search,
+  Trash2,
   X,
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -22,8 +24,12 @@ import { pushToast } from '@/store/uiSlice';
 import {
   useAdministrationSubjectsQuery,
   useCreateSubjectMutation,
+  useDeleteSubjectMutation,
+  useUpdateSubjectMutation,
 } from '../api/administrationApi';
 import { SubjectCreateDialog } from '../components/SubjectCreateDialog';
+import { SubjectEditDialog } from '../components/SubjectEditDialog';
+import { SubjectDeleteDialog } from '../components/SubjectDeleteDialog';
 import { TopicManageDialog } from '../components/TopicManageDialog';
 import type { SubjectResponse } from '@/types/api';
 import type { SubjectFormValues } from '../schemas/subjectSchemas';
@@ -32,6 +38,8 @@ export function SubjectsPage() {
   const dispatch = useAppDispatch();
   const [searchTerm, setSearchTerm] = React.useState('');
   const [isCreateOpen, setIsCreateOpen] = React.useState(false);
+  const [selectedSubjectForEdit, setSelectedSubjectForEdit] = React.useState<SubjectResponse | null>(null);
+  const [selectedSubjectForDelete, setSelectedSubjectForDelete] = React.useState<SubjectResponse | null>(null);
   const [selectedSubjectForTopics, setSelectedSubjectForTopics] = React.useState<SubjectResponse | null>(null);
 
   const {
@@ -44,6 +52,8 @@ export function SubjectsPage() {
   } = useAdministrationSubjectsQuery();
 
   const createSubjectMutation = useCreateSubjectMutation();
+  const updateSubjectMutation = useUpdateSubjectMutation();
+  const deleteSubjectMutation = useDeleteSubjectMutation();
 
   const filteredSubjects = React.useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
@@ -57,6 +67,31 @@ export function SubjectsPage() {
       pushToast({
         title: 'Ders Eklendi',
         description: `"${values.name}" dersi başarıyla tanımlandı.`,
+      })
+    );
+  };
+
+  const handleUpdateSubmit = async (values: SubjectFormValues) => {
+    if (!selectedSubjectForEdit) return;
+    await updateSubjectMutation.mutateAsync({
+      subjectId: selectedSubjectForEdit.id,
+      payload: values,
+    });
+    dispatch(
+      pushToast({
+        title: 'Ders Güncellendi',
+        description: `"${values.name}" dersi başarıyla güncellendi.`,
+      })
+    );
+  };
+
+  const handleDeleteConfirm = async (subjectId: string) => {
+    const subjectName = selectedSubjectForDelete?.name ?? 'Ders';
+    await deleteSubjectMutation.mutateAsync(subjectId);
+    dispatch(
+      pushToast({
+        title: 'Ders Silindi',
+        description: `"${subjectName}" başarıyla silindi.`,
       })
     );
   };
@@ -186,7 +221,6 @@ export function SubjectsPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead scope="col">Ders Adı</TableHead>
-                    <TableHead scope="col">Ders ID</TableHead>
                     <TableHead scope="col">Durum</TableHead>
                     <TableHead scope="col" className="text-right">İşlemler</TableHead>
                   </TableRow>
@@ -199,10 +233,6 @@ export function SubjectsPage() {
                           <BookOpen className="h-4 w-4 text-primary shrink-0" aria-hidden="true" />
                           <span>{subject.name}</span>
                         </div>
-                      </TableCell>
-
-                      <TableCell className="font-mono text-xs text-muted-foreground">
-                        {subject.id}
                       </TableCell>
 
                       <TableCell>
@@ -224,6 +254,30 @@ export function SubjectsPage() {
                             <ListOrdered className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
                             <span>Konuları Yönet</span>
                           </Button>
+
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setSelectedSubjectForEdit(subject)}
+                            className="h-8 text-xs gap-1"
+                            aria-label={`${subject.name} dersini düzenle`}
+                          >
+                            <Pencil className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
+                            <span>Düzenle</span>
+                          </Button>
+
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setSelectedSubjectForDelete(subject)}
+                            className="h-8 text-xs gap-1 text-destructive hover:bg-destructive/10 hover:text-destructive border-destructive/30"
+                            aria-label={`${subject.name} dersini sil`}
+                          >
+                            <Trash2 className="h-3.5 w-3.5 text-destructive" aria-hidden="true" />
+                            <span>Sil</span>
+                          </Button>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -242,6 +296,24 @@ export function SubjectsPage() {
         onSubmit={handleCreateSubmit}
       />
 
+      <SubjectEditDialog
+        open={Boolean(selectedSubjectForEdit)}
+        onOpenChange={(open) => {
+          if (!open) setSelectedSubjectForEdit(null);
+        }}
+        subject={selectedSubjectForEdit}
+        onSubmit={handleUpdateSubmit}
+      />
+
+      <SubjectDeleteDialog
+        open={Boolean(selectedSubjectForDelete)}
+        onOpenChange={(open) => {
+          if (!open) setSelectedSubjectForDelete(null);
+        }}
+        subject={selectedSubjectForDelete}
+        onConfirm={handleDeleteConfirm}
+      />
+
       <TopicManageDialog
         open={Boolean(selectedSubjectForTopics)}
         onOpenChange={(open) => {
@@ -252,4 +324,3 @@ export function SubjectsPage() {
     </div>
   );
 }
-

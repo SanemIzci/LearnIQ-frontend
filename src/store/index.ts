@@ -6,6 +6,7 @@ import authReducer, {
   clearAuth,
   setCredentials,
   switchTenant,
+  writePlatformBootstrap,
   writeSessionBootstrap,
   type AuthState,
 } from './authSlice';
@@ -48,9 +49,17 @@ authSideEffectsMiddleware.startListening({
         refreshToken: nextAuth.refreshToken,
         tenantId: nextAuth.tenantId,
       });
-    } else {
-      // SUPER_ADMIN has no refresh token — never write tokens to web storage
+      writePlatformBootstrap(null);
+    } else if (auth.role === 'SUPER_ADMIN' && nextAuth.user && nextAuth.accessToken) {
       writeSessionBootstrap(null);
+      writePlatformBootstrap({
+        accessToken: nextAuth.accessToken,
+        user: nextAuth.user,
+        sessionExpiresAt: nextAuth.sessionExpiresAt,
+      });
+    } else {
+      writeSessionBootstrap(null);
+      writePlatformBootstrap(null);
     }
   },
 });
@@ -61,6 +70,7 @@ authSideEffectsMiddleware.startListening({
     registeredAbortRefresh?.();
     purgeTenantQueryCache();
     writeSessionBootstrap(null);
+    writePlatformBootstrap(null);
   },
 });
 
