@@ -205,7 +205,7 @@ export function useClassroomComparisonQuery(classroomIds: string[], examId?: str
   return useQuery({
     queryKey: tenantQueryKey(tenantId, 'classroom-comparison', sortedIds, examId || 'LATEST'),
     queryFn: () => analyticsApi.compareClassrooms(classroomIds, examId),
-    enabled: Boolean(tenantId && classroomIds.length > 0),
+    enabled: Boolean(tenantId && classroomIds.length >= 2),
   });
 }
 

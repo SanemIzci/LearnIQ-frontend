@@ -99,7 +99,7 @@ export function ExamRulesPage() {
       <div
         role="tablist"
         aria-label="Sınav Tipleri"
-        className="flex border-b text-xs font-medium overflow-x-auto"
+        className="flex border-b text-xs font-medium overflow-x-auto max-w-full"
       >
         {EXAM_TYPES.map((type) => {
           const isActive = activeExamType === type.key;
@@ -132,7 +132,7 @@ export function ExamRulesPage() {
         role="tabpanel"
         id="exam-rules-tabpanel"
         aria-labelledby={`exam-tab-${activeExamType}`}
-        className="shadow-sm"
+        className="shadow-sm overflow-hidden"
       >
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
@@ -161,16 +161,16 @@ export function ExamRulesPage() {
             </div>
           ) : (
             <div className="rounded-lg border overflow-x-auto">
-              <Table>
+              <Table className="w-full">
                 <caption className="sr-only">{activeConfig.key} sınav kuralları listesi</caption>
                 <TableHeader>
                   <TableRow>
-                    <TableHead scope="col">Ders Adı</TableHead>
-                    <TableHead scope="col">Soru Sayısı Sınırı</TableHead>
-                    <TableHead scope="col">Ceza Böleni (Divisor)</TableHead>
-                    <TableHead scope="col">Hesaplama Formülü</TableHead>
-                    <TableHead scope="col">Kural Durumu</TableHead>
-                    <TableHead scope="col" className="text-right">İşlem</TableHead>
+                    <TableHead scope="col" className="min-w-[130px]">Ders Adı</TableHead>
+                    <TableHead scope="col" className="whitespace-nowrap">Soru Sayısı Sınırı</TableHead>
+                    <TableHead scope="col" className="whitespace-nowrap">Ceza Böleni (Divisor)</TableHead>
+                    <TableHead scope="col" className="whitespace-nowrap">Hesaplama Formülü</TableHead>
+                    <TableHead scope="col" className="whitespace-nowrap">Kural Durumu</TableHead>
+                    <TableHead scope="col" className="text-right whitespace-nowrap">İşlem</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -184,12 +184,9 @@ export function ExamRulesPage() {
                           <div className="font-semibold text-foreground text-sm">
                             {subject.name}
                           </div>
-                          <div className="text-[11px] text-muted-foreground font-mono">
-                            {subject.id}
-                          </div>
                         </TableCell>
 
-                        <TableCell>
+                        <TableCell className="whitespace-nowrap">
                           {rule ? (
                             <span className="font-mono font-semibold text-sm">
                               {rule.questionCount} Soru
@@ -201,7 +198,7 @@ export function ExamRulesPage() {
                           )}
                         </TableCell>
 
-                        <TableCell>
+                        <TableCell className="whitespace-nowrap">
                           {rule ? (
                             <Badge variant="outline" className="font-mono text-xs">
                               {rule.penaltyDivisor.toFixed(1)}
@@ -213,7 +210,7 @@ export function ExamRulesPage() {
                           )}
                         </TableCell>
 
-                        <TableCell className="font-mono text-xs text-muted-foreground">
+                        <TableCell className="font-mono text-xs text-muted-foreground whitespace-nowrap">
                           {rule ? (
                             <span>
                               Net = D - (Y / {rule.penaltyDivisor.toFixed(0)})
@@ -225,7 +222,7 @@ export function ExamRulesPage() {
                           )}
                         </TableCell>
 
-                        <TableCell>
+                        <TableCell className="whitespace-nowrap">
                           {isConfigured ? (
                             <Badge variant="success" className="gap-1 text-[11px]">
                               <CheckCircle2 className="h-3 w-3" aria-hidden="true" />
@@ -239,7 +236,7 @@ export function ExamRulesPage() {
                           )}
                         </TableCell>
 
-                        <TableCell className="text-right">
+                        <TableCell className="text-right whitespace-nowrap">
                           <Button
                             type="button"
                             variant={isConfigured ? 'outline' : 'default'}

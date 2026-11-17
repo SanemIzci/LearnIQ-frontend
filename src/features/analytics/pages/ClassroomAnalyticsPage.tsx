@@ -45,6 +45,8 @@ export function ClassroomAnalyticsPage() {
   const dispatch = useAppDispatch();
   const queryClient = useQueryClient();
   const tenantId = useAppSelector((state) => state.auth.tenantId);
+  const currentUser = useAppSelector((state) => state.auth.user);
+  const isAdmin = currentUser?.role === 'ADMIN' || currentUser?.role === 'SUPER_ADMIN';
 
   const [selectedExamId, setSelectedExamId] = React.useState<string>('');
   const [observationDialogOpen, setObservationDialogOpen] = React.useState(false);
@@ -438,64 +440,82 @@ export function ClassroomAnalyticsPage() {
             </div>
           ) : (
             <ul className="space-y-3">
-              {observations.map((obs) => (
-                <li
-                  key={obs.id}
-                  className="rounded-lg border bg-card p-4 space-y-2 hover:border-primary/40 transition-colors"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="space-y-1 flex-1">
-                      <p className="text-sm text-foreground whitespace-pre-wrap">{obs.content}</p>
-                      <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground pt-1">
-                        <span>Eklenme: {new Date(obs.createdAt).toLocaleDateString('tr-TR')}</span>
-                        {obs.subjectId ? (
-                          <Badge variant="outline" className="text-[10px]">
-                            {subjects.find((s) => s.id === obs.subjectId)?.name || 'Ders Notu'}
-                          </Badge>
-                        ) : null}
+              {observations.map((obs) => {
+                const canManage = isAdmin || currentUser?.id === obs.teacherId;
+                return (
+                  <li
+                    key={obs.id}
+                    className="rounded-lg border bg-card p-4 space-y-2 hover:border-primary/40 transition-colors"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="space-y-1.5 flex-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-md">
+                            <GraduationCap className="h-3.5 w-3.5" aria-hidden="true" />
+                            {obs.teacherName || 'Öğretmen'}
+                          </span>
+                          {(obs.subjectName || obs.subjectId) && (
+                            <Badge variant="outline" className="text-[11px] font-medium">
+                              {obs.subjectName || subjects.find((s) => s.id === obs.subjectId)?.name || 'Ders Notu'}
+                            </Badge>
+                          )}
+                          <span className="text-xs text-muted-foreground flex items-center gap-1">
+                            <Calendar className="h-3 w-3" aria-hidden="true" />
+                            {new Date(obs.createdAt).toLocaleDateString('tr-TR', {
+                              day: '2-digit',
+                              month: '2-digit',
+                              year: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
+                          </span>
+                        </div>
+                        <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed pt-0.5">{obs.content}</p>
                       </div>
+
+                      {canManage && (
+                        <div className="flex items-center gap-1 shrink-0">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setEditingObservation(obs);
+                              setObservationDialogOpen(true);
+                            }}
+                            className="h-8 w-8 p-0"
+                            aria-label="Gözlem notunu düzenle"
+                          >
+                            <FileEdit className="h-3.5 w-3.5" aria-hidden="true" />
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => deleteObservationMutation.mutate(obs.id)}
+                            disabled={deleteObservationMutation.isPending}
+                            className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                            aria-label="Gözlem notunu sil"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                          </Button>
+                        </div>
+                      )}
                     </div>
 
-                    <div className="flex items-center gap-1 shrink-0">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          setEditingObservation(obs);
-                          setObservationDialogOpen(true);
-                        }}
-                        className="h-8 w-8 p-0"
-                        aria-label="Gözlem notunu düzenle"
-                      >
-                        <FileEdit className="h-3.5 w-3.5" aria-hidden="true" />
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => deleteObservationMutation.mutate(obs.id)}
-                        disabled={deleteObservationMutation.isPending}
-                        className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                        aria-label="Gözlem notunu sil"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
-                      </Button>
-                    </div>
-                  </div>
-
-                  {Array.isArray(obs.tags) && obs.tags.length > 0 ? (
-                    <div className="flex flex-wrap gap-1.5 pt-1">
-                      {obs.tags.map((tag) => (
-                        <Badge key={tag} variant="secondary" className="gap-1 text-[11px] py-0 px-2 bg-muted/60">
-                          <Tag className="h-2.5 w-2.5" aria-hidden="true" />
-                          #{tag}
-                        </Badge>
-                      ))}
-                    </div>
-                  ) : null}
-                </li>
-              ))}
+                    {Array.isArray(obs.tags) && obs.tags.length > 0 ? (
+                      <div className="flex flex-wrap gap-1.5 pt-1">
+                        {obs.tags.map((tag) => (
+                          <Badge key={tag} variant="secondary" className="gap-1 text-[11px] py-0 px-2 bg-muted/60">
+                            <Tag className="h-2.5 w-2.5" aria-hidden="true" />
+                            #{tag}
+                          </Badge>
+                        ))}
+                      </div>
+                    ) : null}
+                  </li>
+                );
+              })}
             </ul>
           )}
         </CardContent>

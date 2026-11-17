@@ -133,11 +133,17 @@ export function ClassroomComparisonCard({
       </CardHeader>
 
       <CardContent className="pt-6 space-y-6">
-        {selectedClassroomIds.length === 0 ? (
+        {availableClassrooms.length < 2 ? (
           <div className="flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed py-10 text-center text-muted-foreground">
             <Columns className="h-8 w-8 opacity-30" aria-hidden="true" />
-            <p className="text-sm font-medium text-foreground">Karşılaştırma için sınıf seçiniz</p>
-            <p className="text-xs">Yukarıdaki butonlara tıklayarak en az bir sınıf seçmelisiniz.</p>
+            <p className="text-sm font-medium text-foreground">Karşılaştırma için en az 2 sınıf gereklidir</p>
+            <p className="text-xs">Kurumunuzda şu anda yalnızca 1 sınıf kayıtlıdır. Yeni bir sınıf eklediğinizde sınıflar arası karşılaştırma grafiğini görüntüleyebilirsiniz.</p>
+          </div>
+        ) : selectedClassroomIds.length < 2 ? (
+          <div className="flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed py-10 text-center text-muted-foreground">
+            <Columns className="h-8 w-8 opacity-30" aria-hidden="true" />
+            <p className="text-sm font-medium text-foreground">Lütfen en az 2 sınıf seçiniz</p>
+            <p className="text-xs">Sınıflar arası başarı ve katılımı kıyaslamak için yukarıdan en az iki sınıf seçmelisiniz.</p>
           </div>
         ) : isLoading ? (
           <div className="flex h-48 items-center justify-center gap-2 text-sm text-muted-foreground">

@@ -198,7 +198,7 @@ export function AppShell() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-background text-foreground">
+    <div className="min-h-screen flex flex-col bg-background text-foreground w-full overflow-x-hidden">
       <a
         href="#content"
         className="visually-hidden fixed left-4 top-4 z-50 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow"
@@ -259,11 +259,11 @@ export function AppShell() {
         ) : null}
       </header>
 
-      <div className="flex flex-1">
+      <div className="flex flex-1 w-full min-w-0">
         <aside
           id="primary-sidebar"
           className={cn(
-            'no-print fixed inset-y-14 left-0 z-20 w-64 border-r bg-card p-4 transition-transform lg:static lg:block lg:translate-x-0',
+            'no-print fixed inset-y-14 left-0 z-20 w-64 shrink-0 border-r bg-card p-4 transition-transform lg:static lg:block lg:translate-x-0',
             mobileNavOpen ? 'block translate-x-0 shadow-lg' : 'hidden -translate-x-full lg:block'
           )}
         >
@@ -300,7 +300,7 @@ export function AppShell() {
           ref={mainRef}
           id="content"
           tabIndex={-1}
-          className="print-container flex-1 p-4 lg:p-6"
+          className="print-container flex-1 min-w-0 p-4 lg:p-6"
         >
           <Outlet />
         </main>

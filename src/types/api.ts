@@ -304,6 +304,8 @@ export interface RejectionRequest {
 export interface StudentExamResult {
   id: string;
   studentId: string;
+  studentName?: string;
+  studentUsername?: string;
   totalScore: number;
   classRank: number | null;
   schoolRank: number | null;
@@ -437,8 +439,11 @@ export interface AiReportResponseDto {
 export interface ObservationResponse {
   id: string;
   teacherId: string;
+  teacherName?: string | null;
+  teacherRole?: string | null;
   classroomId: string | null;
   subjectId: string | null;
+  subjectName?: string | null;
   examId: string | null;
   content: string;
   tags: string[];

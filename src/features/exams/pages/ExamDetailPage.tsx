@@ -145,10 +145,13 @@ export function ExamDetailPage() {
       await queryClient.invalidateQueries({
         queryKey: tenantQueryKey(tenantId, 'exam-results', examId),
       });
+      const studentLabel = result.studentName
+        ? `${result.studentName} (#${result.studentId.slice(0, 8)}...)`
+        : `#${result.studentId.slice(0, 8)}...`;
       dispatch(
         pushToast({
           title: 'Sonuç Onaylandı',
-          description: `#${result.studentId.slice(0, 8)}... ID'li öğrencinin sınav sonucu onaylandı.`,
+          description: `${studentLabel} adlı öğrencinin sınav sonucu onaylandı.`,
         })
       );
     } catch (err) {
@@ -569,8 +572,14 @@ export function ExamDetailPage() {
                   return (
                     <TableRow key={result.id}>
                       <TableCell className="font-medium text-foreground">
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono text-xs">{formattedStudent}</span>
+                        <div className="flex flex-col">
+                          <span className="font-semibold text-foreground text-sm">
+                            {result.studentName || formattedStudent}
+                          </span>
+                          <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground font-mono">
+                            {result.studentUsername ? <span>@{result.studentUsername}</span> : null}
+                            {result.studentName ? <span>({formattedStudent})</span> : null}
+                          </div>
                         </div>
                       </TableCell>
                       <TableCell className="font-semibold text-foreground">
