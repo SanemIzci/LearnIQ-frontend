@@ -10,6 +10,8 @@ coverage/
 *.tsbuildinfo
 
 # Environment & credentials (never commit secrets; keep .env.example public)
+LOCAL_ACCOUNTS.md
+*.local.md
 .env
 .env.*
 !.env.example
